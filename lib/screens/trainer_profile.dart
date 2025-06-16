@@ -84,7 +84,7 @@ class TrainerProfileScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         children: [
-          Icon(icon, color: AppTheme.primaryColor, size: 20),
+          Icon(icon, color: AppTheme.primaryGreen, size: 20),
           const SizedBox(width: 8),
           Expanded(
             child: Text(

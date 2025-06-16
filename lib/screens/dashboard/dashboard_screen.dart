@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../utils/theme.dart';
 import '../../services/user_provider.dart';
+import '../../models/user.dart';
 import '../trainers/trainers_list_screen.dart';
 import '../progress/progress_screen.dart';
 import '../diet/diet_plan_screen.dart';
 import '../meetups/meetups_screen.dart';
-import '../profile/profile_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -25,6 +25,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
     const DietPlanScreen(),
     const MeetupsScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize user data
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    Future.microtask(() {
+      if (userProvider.user == null) {
+        userProvider.setUser(User(
+          id: 'demo_user',
+          name: 'John Doe',
+          email: 'john.doe@example.com',
+          age: 28,
+          weight: 75.5,
+          goals: ['Flexibility', 'Strength', 'Mental Wellness'],
+          avatarUrl: null,
+        ));
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,174 +90,179 @@ class DashboardHomeTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context);
-    final user = userProvider.user;
-    
-    if (user == null) {
-      return const Center(child: CircularProgressIndicator());
-    }
+    return Consumer<UserProvider>(
+      builder: (context, userProvider, _) {
+        final user = userProvider.user;
+        
+        if (user == null) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
 
-    return SafeArea(
-      child: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            floating: true,
-            title: Row(
-              children: [
-                GestureDetector(
-                  onTap: () => Navigator.pushNamed(context, '/profile'),
-                  child: CircleAvatar(
-                    backgroundColor: AppTheme.primaryColor,
-                    child: Text(
-                      user.name.substring(0, 2).toUpperCase(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Text('Welcome back, ${user.name.split(' ')[0]}!'),
-                const Spacer(),
-                IconButton(
-                  icon: const Icon(Icons.notifications_outlined),
-                  onPressed: () => Navigator.pushNamed(context, '/notifications'),
-                ),
-              ],
-            ),
-          ),
-          const SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.all(16.0),
-              child: SearchBar(
-                hintText: 'Search for classes, trainers...',
-                leading: Icon(Icons.search),
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Featured Trainers',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    height: 200,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: 5,
-                      itemBuilder: (context, index) {
-                        return Card(
-                          margin: const EdgeInsets.only(right: 16),
-                          child: SizedBox(
-                            width: 160,
-                            child: Column(
-                              children: [
-                                Expanded(
-                                  child: Container(
-                                    color: Colors.grey[300],
-                                    child: const Center(child: Icon(Icons.person)),
-                                  ),
-                                ),
-                                const Padding(
-                                  padding: EdgeInsets.all(8.0),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Trainer Name'),
-                                      Text('Specialization'),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
+        return SafeArea(
+          child: CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                floating: true,
+                title: Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.pushNamed(context, '/profile'),
+                      child: CircleAvatar(
+                        backgroundColor: AppTheme.primaryGreen,
+                        child: Text(
+                          user.name.substring(0, 2).toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
                           ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Upcoming Classes',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 16),
-                  Card(
-                    child: ListTile(
-                      leading: const CircleAvatar(child: Icon(Icons.calendar_today)),
-                      title: const Text('Vinyasa Flow'),
-                      subtitle: const Text('Today, 3:00 PM'),
-                      trailing: ElevatedButton(
-                        onPressed: () {},
-                        child: const Text('Join'),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 12),
+                    Text('Welcome back, ${user.name.split(' ')[0]}!'),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.notifications_outlined),
+                      onPressed: () => Navigator.pushNamed(context, '/notifications'),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Quick Actions',
-                    style: Theme.of(context).textTheme.titleLarge,
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: SearchBar(
+                    hintText: 'Search for classes, trainers...',
+                    leading: Icon(Icons.search),
                   ),
-                  const SizedBox(height: 16),
-                  GridView.count(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 16,
-                    crossAxisSpacing: 16,
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _QuickActionCard(
-                        icon: Icons.video_camera_front,
-                        title: 'Live Classes',
-                        onTap: () {},
+                      Text(
+                        'Featured Trainers',
+                        style: Theme.of(context).textTheme.titleLarge,
                       ),
-                      _QuickActionCard(
-                        icon: Icons.restaurant_menu,
-                        title: 'Diet Plans',
-                        onTap: () {},
-                      ),
-                      _QuickActionCard(
-                        icon: Icons.track_changes,
-                        title: 'Track Progress',
-                        onTap: () {},
-                      ),
-                      _QuickActionCard(
-                        icon: Icons.schedule,
-                        title: 'Build Habits',
-                        onTap: () {},
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        height: 200,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: 5,
+                          itemBuilder: (context, index) {
+                            return Card(
+                              margin: const EdgeInsets.only(right: 16),
+                              child: SizedBox(
+                                width: 160,
+                                child: Column(
+                                  children: [
+                                    Expanded(
+                                      child: Container(
+                                        color: Colors.grey[300],
+                                        child: const Center(child: Icon(Icons.person)),
+                                      ),
+                                    ),
+                                    const Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text('Trainer Name'),
+                                          Text('Specialization'),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
-            ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Upcoming Classes',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 16),
+                      Card(
+                        child: ListTile(
+                          leading: const CircleAvatar(child: Icon(Icons.calendar_today)),
+                          title: const Text('Vinyasa Flow'),
+                          subtitle: const Text('Today, 3:00 PM'),
+                          trailing: ElevatedButton(
+                            onPressed: () {},
+                            child: const Text('Join'),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Quick Actions',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 16),
+                      GridView.count(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 16,
+                        crossAxisSpacing: 16,
+                        children: [
+                          _QuickActionCard(
+                            icon: Icons.video_camera_front,
+                            title: 'Live Classes',
+                            onTap: () {},
+                          ),
+                          _QuickActionCard(
+                            icon: Icons.restaurant_menu,
+                            title: 'Diet Plans',
+                            onTap: () {},
+                          ),
+                          _QuickActionCard(
+                            icon: Icons.track_changes,
+                            title: 'Track Progress',
+                            onTap: () {},
+                          ),
+                          _QuickActionCard(
+                            icon: Icons.schedule,
+                            title: 'Build Habits',
+                            onTap: () {},
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -261,7 +286,7 @@ class _QuickActionCard extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 32, color: AppTheme.primaryColor),
+            Icon(icon, size: 32, color: AppTheme.primaryGreen),
             const SizedBox(height: 8),
             Text(title, textAlign: TextAlign.center),
           ],

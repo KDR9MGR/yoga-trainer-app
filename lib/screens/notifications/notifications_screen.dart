@@ -116,7 +116,7 @@ class NotificationsScreen extends StatelessWidget {
         break;
       case 'trainer_message':
         icon = Icons.message;
-        iconColor = AppTheme.primaryColor;
+        iconColor = AppTheme.primaryGreen;
         break;
       case 'diet_reminder':
         icon = Icons.restaurant_menu;
@@ -144,7 +144,7 @@ class NotificationsScreen extends StatelessWidget {
       },
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: iconColor.withOpacity(0.1),
+          backgroundColor: iconColor.withAlpha((0.1 * 255).round()),
           child: Icon(
             icon,
             color: iconColor,

@@ -31,7 +31,7 @@ class LiveMeetupsScreen extends StatelessWidget {
                         context: context,
                         builder: (ctx) => AlertDialog(
                           title: Text(meetup.title),
-                          content: Text('Q&A and resources will be shared post-meetup.'),
+                          content: const Text('Q&A and resources will be shared post-meetup.'),
                           actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Close'))],
                         ),
                       );
@@ -53,13 +53,13 @@ class LiveMeetupsScreen extends StatelessWidget {
             ),
           );
         },
-        child: const Icon(Icons.add),
         tooltip: 'Add Demo Meetup',
+        child: const Icon(Icons.add),
       ),
     );
   }
 }
 
 extension DateHelpers on DateTime {
-  String toShortDateString() => '${this.day}/${this.month}/${this.year}';
+  String toShortDateString() => '$day/$month/$year';
 }

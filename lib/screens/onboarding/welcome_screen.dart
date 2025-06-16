@@ -19,7 +19,7 @@ class WelcomeScreen extends StatelessWidget {
                   Text(
                     'Welcome to',
                     style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                          color: AppTheme.primaryColor,
+                          color: AppTheme.primaryGreen,
                           fontWeight: FontWeight.w600,
                         ),
                     textAlign: TextAlign.center,
@@ -28,7 +28,7 @@ class WelcomeScreen extends StatelessWidget {
                   Text(
                     'Yoga Life',
                     style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                          color: AppTheme.primaryColor,
+                          color: AppTheme.primaryGreen,
                           fontWeight: FontWeight.bold,
                           fontSize: 40,
                         ),

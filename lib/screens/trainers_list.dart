@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../services/trainer_provider.dart';
 import '../models/trainer.dart';
 import '../widgets/trainer_card.dart';
-import '../utils/constants.dart';
 
 class TrainersListScreen extends StatefulWidget {
   const TrainersListScreen({Key? key}) : super(key: key);
@@ -74,7 +73,7 @@ class _TrainersListScreenState extends State<TrainersListScreen> {
               end: Alignment.bottomCenter,
               colors: [
                 Theme.of(context).primaryColor,
-                Theme.of(context).primaryColor.withOpacity(0.8),
+                Theme.of(context).primaryColor.withAlpha((0.8 * 255).round()),
               ],
             ),
           ),
@@ -136,7 +135,7 @@ class _TrainersListScreenState extends State<TrainersListScreen> {
         const Text('Sort by: ', style: TextStyle(fontWeight: FontWeight.bold)),
         DropdownButton<String>(
           value: _sortBy,
-          items: [
+          items: const [
             DropdownMenuItem(value: 'rating', child: Text('Rating')),
             DropdownMenuItem(value: 'experience', child: Text('Experience')),
             DropdownMenuItem(value: 'price', child: Text('Price')),

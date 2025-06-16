@@ -79,7 +79,7 @@ class _TrainersListScreenState extends State<TrainersListScreen> {
               end: Alignment.bottomCenter,
               colors: [
                 Theme.of(context).primaryColor,
-                Theme.of(context).primaryColor.withOpacity(0.8),
+                Theme.of(context).primaryColor.withAlpha((0.8 * 255).round()),
               ],
             ),
           ),
@@ -141,7 +141,7 @@ class _TrainersListScreenState extends State<TrainersListScreen> {
         const Text('Sort by: ', style: TextStyle(fontWeight: FontWeight.bold)),
         DropdownButton<String>(
           value: _sortBy,
-          items: [
+          items: const [
             DropdownMenuItem(value: 'rating', child: Text('Rating')),
             DropdownMenuItem(value: 'experience', child: Text('Experience')),
             DropdownMenuItem(value: 'price', child: Text('Price')),
@@ -183,7 +183,7 @@ class _TrainersListScreenState extends State<TrainersListScreen> {
       sliver: SliverGrid(
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          childAspectRatio: 0.75,
+          childAspectRatio: 0.68,
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
         ),

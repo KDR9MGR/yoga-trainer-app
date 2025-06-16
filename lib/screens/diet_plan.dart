@@ -65,13 +65,13 @@ class DietPlanScreen extends StatelessWidget {
             ),
           );
         },
-        child: const Icon(Icons.add),
         tooltip: 'Add Demo Plan',
+        child: const Icon(Icons.add),
       ),
     );
   }
 }
 
 extension DateHelpers on DateTime {
-  String toShortDateString() => '${this.day}/${this.month}/${this.year}';
+  String toShortDateString() => '$day/$month/$year';
 }

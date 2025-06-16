@@ -67,10 +67,10 @@ class _DietPlanScreenState extends State<DietPlanScreen> {
               child: Container(
                 width: 60,
                 decoration: BoxDecoration(
-                  color: isSelected ? AppTheme.primaryColor : Colors.transparent,
+                  color: isSelected ? AppTheme.primaryGreen : Colors.transparent,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: isSelected ? AppTheme.primaryColor : Colors.grey[300]!,
+                    color: isSelected ? AppTheme.primaryGreen : Colors.grey[300]!,
                   ),
                 ),
                 child: Column(
@@ -200,7 +200,7 @@ class _DietPlanScreenState extends State<DietPlanScreen> {
             const SizedBox(height: 4),
             LinearProgressIndicator(
               value: 0.7,
-              backgroundColor: color.withOpacity(0.1),
+              backgroundColor: color.withAlpha((0.1 * 255).round()),
               valueColor: AlwaysStoppedAnimation<Color>(color),
             ),
           ],
@@ -261,7 +261,7 @@ class _DietPlanScreenState extends State<DietPlanScreen> {
                     Text(
                       meal['time'] as String,
                       style: const TextStyle(
-                        color: AppTheme.primaryColor,
+                        color: AppTheme.primaryGreen,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

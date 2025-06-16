@@ -37,8 +37,8 @@ class HabitBuilderScreen extends StatelessWidget {
             builder: (ctx) => _AddHabitDialog(),
           );
         },
-        child: const Icon(Icons.add),
         tooltip: 'Add Habit',
+        child: const Icon(Icons.add),
       ),
     );
   }

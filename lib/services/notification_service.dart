@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class NotificationService extends ChangeNotifier {
-  List<String> _notifications = [];
+  final List<String> _notifications = [];
 
   List<String> get notifications => _notifications;
 

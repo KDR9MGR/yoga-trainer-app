@@ -67,12 +67,12 @@ class _MeetupsScreenState extends State<MeetupsScreen> {
         });
       },
       calendarStyle: CalendarStyle(
-        selectedDecoration: BoxDecoration(
-          color: AppTheme.primaryColor,
+        selectedDecoration: const BoxDecoration(
+          color: AppTheme.primaryGreen,
           shape: BoxShape.circle,
         ),
         todayDecoration: BoxDecoration(
-          color: AppTheme.primaryColor.withOpacity(0.3),
+          color: AppTheme.primaryGreen.withAlpha((0.3 * 255).round()),
           shape: BoxShape.circle,
         ),
       ),
@@ -122,16 +122,16 @@ class _MeetupsScreenState extends State<MeetupsScreen> {
               Container(
                 height: 120,
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withOpacity(0.1),
+                  color: AppTheme.primaryGreen.withAlpha((0.1 * 255).round()),
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(12),
                   ),
                 ),
-                child: Center(
+                child: const Center(
                   child: Icon(
                     Icons.group,
                     size: 48,
-                    color: AppTheme.primaryColor,
+                    color: AppTheme.primaryGreen,
                   ),
                 ),
               ),
@@ -157,13 +157,13 @@ class _MeetupsScreenState extends State<MeetupsScreen> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: AppTheme.primaryColor.withOpacity(0.1),
+                            color: AppTheme.primaryGreen.withAlpha((0.1 * 255).round()),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
                             meetup['type'] as String,
-                            style: TextStyle(
-                              color: AppTheme.primaryColor,
+                            style: const TextStyle(
+                              color: AppTheme.primaryGreen,
                               fontSize: 12,
                             ),
                           ),
@@ -202,8 +202,8 @@ class _MeetupsScreenState extends State<MeetupsScreen> {
                             value: (meetup['participants'] as int) /
                                 (meetup['maxParticipants'] as int),
                             backgroundColor: Colors.grey[200],
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              AppTheme.primaryColor,
+                            valueColor: const AlwaysStoppedAnimation<Color>(
+                              AppTheme.primaryGreen,
                             ),
                           ),
                         ),

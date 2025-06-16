@@ -26,8 +26,8 @@ class NotificationsScreen extends StatelessWidget {
           // Demo: Add a sample notification
           Provider.of<NotificationService>(context, listen: false).addNotification('Class reminder at ${DateTime.now().hour}:${DateTime.now().minute}');
         },
-        child: const Icon(Icons.add),
         tooltip: 'Add Demo Notification',
+        child: const Icon(Icons.add),
       ),
     );
   }

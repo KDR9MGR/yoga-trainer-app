@@ -1,54 +1,76 @@
 # Flutter wrapper
 -keep class io.flutter.app.** { *; }
--keep class io.flutter.plugin.** { *; }
--keep class io.flutter.util.** { *; }
--keep class io.flutter.view.** { *; }
--keep class io.flutter.** { *; }
--keep class io.flutter.plugins.** { *; }
--keep class io.flutter.plugin.editing.** { *; }
+-keep class io.flutter.plugin.**  { *; }
+-keep class io.flutter.util.**  { *; }
+-keep class io.flutter.view.**  { *; }
+-keep class io.flutter.**  { *; }
+-keep class io.flutter.plugins.**  { *; }
 
-# Kotlin
--keep class kotlin.** { *; }
--keep class kotlin.Metadata { *; }
--dontwarn kotlin.**
--keepclassmembers class **$WhenMappings {
-    <fields>;
-}
--keepclassmembers class kotlin.Metadata {
-    public <methods>;
-}
+# Notifications
+-keep class com.dexterous.** { *; }
+-keep class androidx.core.app.** { *; }
+-dontwarn androidx.core.app.**
+-keep class androidx.core.content.** { *; }
+-dontwarn androidx.core.content.**
+-keep class android.app.Notification** { *; }
+-keep class android.app.NotificationChannel { *; }
+-keep class android.app.NotificationManager { *; }
+-keep class android.app.NotificationChannel** { *; }
+-keep class android.app.NotificationManager** { *; }
+-keep class android.support.v4.app.NotificationCompat** { *; }
+-keep class androidx.core.app.NotificationCompat** { *; }
+-keep class androidx.core.app.NotificationManagerCompat { *; }
+-keep class androidx.core.app.NotificationCompat$BigPictureStyle { *; }
+-keep class androidx.core.app.NotificationCompat$Builder { *; }
 
-# Google Play Services
--keep class com.google.android.gms.** { *; }
--dontwarn com.google.android.gms.**
-
-# AndroidX
--keep class androidx.** { *; }
--keep interface androidx.** { *; }
--keep class * extends androidx.** { *; }
--dontwarn androidx.**
-
-# Keep native methods
--keepclasseswithmembernames class * {
-    native <methods>;
+# Keep `Companion` object fields of serializable classes.
+# This avoids serializer lookup through `getDeclaredClasses` as done for named companion objects.
+-if @kotlinx.serialization.Serializable class **
+-keepclassmembers class <1> {
+    static <1>$Companion Companion;
 }
 
-# Keep custom application class
--keep class com.example.yoga_new.Application { *; }
+# Keep `serializer()` on companion objects (both default and named) of serializable classes.
+-if @kotlinx.serialization.Serializable class ** {
+    static **$* *;
+}
+-keepclassmembers class <2>$<3> {
+    kotlinx.serialization.KSerializer serializer(...);
+}
 
-# Prevent proguard from stripping interface information from TypeAdapter, TypeAdapterFactory,
-# JsonSerializer, JsonDeserializer instances (so they can be used in @JsonAdapter)
--keep class * extends com.google.gson.TypeAdapter
--keep class * implements com.google.gson.TypeAdapterFactory
--keep class * implements com.google.gson.JsonSerializer
--keep class * implements com.google.gson.JsonDeserializer
+# Keep `INSTANCE.serializer()` of serializable objects.
+-if @kotlinx.serialization.Serializable class ** {
+    public static ** INSTANCE;
+}
+-keepclassmembers class <1> {
+    public static <1> INSTANCE;
+    kotlinx.serialization.KSerializer serializer(...);
+}
 
-# Retain generic signatures of TypeToken and its subclasses
--keep,allowobfuscation,allowshrinking class com.google.gson.reflect.TypeToken
--keep,allowobfuscation,allowshrinking class * extends com.google.gson.reflect.TypeToken
+# @Serializable and @Polymorphic are used at runtime for polymorphic serialization.
+-keepattributes RuntimeVisibleAnnotations,AnnotationDefault
 
-# Keep R
--keep class **.R
--keep class **.R$* {
-    <fields>;
-} 
+# Flutter R8 rules for Flutter. Refer to R8 page: https://r8.googlesource.com/r8/
+# Flutter Android embedding v1 -> v2 migration. https://flutter.dev/go/android-project-migration
+-keep class io.flutter.app.** { *; }
+-keep class io.flutter.plugin.**  { *; }
+-keep class io.flutter.util.**  { *; }
+-keep class io.flutter.view.**  { *; }
+-keep class io.flutter.webkit.**  { *; }
+-keep class io.flutter.plugins.**  { *; }
+-keep class com.google.firebase.** { *; }
+
+# Rules from build/app/outputs/mapping/release/missing_rules.txt
+-dontwarn com.google.android.play.core.splitcompat.SplitCompatApplication
+-dontwarn com.google.android.play.core.splitinstall.SplitInstallException
+-dontwarn com.google.android.play.core.splitinstall.SplitInstallManager
+-dontwarn com.google.android.play.core.splitinstall.SplitInstallManagerFactory
+-dontwarn com.google.android.play.core.splitinstall.SplitInstallRequest$Builder
+-dontwarn com.google.android.play.core.splitinstall.SplitInstallRequest
+-dontwarn com.google.android.play.core.splitinstall.SplitInstallSessionState
+-dontwarn com.google.android.play.core.splitinstall.SplitInstallStateUpdatedListener
+-dontwarn com.google.android.play.core.tasks.OnFailureListener
+-dontwarn com.google.android.play.core.tasks.OnSuccessListener
+-dontwarn com.google.android.play.core.tasks.Task
+
+# Add any custom rules here 

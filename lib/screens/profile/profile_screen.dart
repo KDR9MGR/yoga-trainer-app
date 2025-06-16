@@ -51,7 +51,7 @@ class ProfileScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppTheme.primaryColor.withOpacity(0.1),
+        color: AppTheme.primaryGreen.withAlpha((0.1 * 255).round()),
         borderRadius: const BorderRadius.vertical(
           bottom: Radius.circular(30),
         ),
@@ -60,7 +60,7 @@ class ProfileScreen extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 50,
-            backgroundColor: AppTheme.primaryColor,
+            backgroundColor: AppTheme.primaryGreen,
             child: Text(
               user.name.substring(0, 2).toUpperCase(),
               style: const TextStyle(
@@ -134,7 +134,7 @@ class ProfileScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withAlpha((0.05 * 255).round()),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -142,7 +142,7 @@ class ProfileScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(icon, color: AppTheme.primaryColor),
+          Icon(icon, color: AppTheme.primaryGreen),
           const SizedBox(width: 16),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -215,7 +215,7 @@ class ProfileScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withAlpha((0.05 * 255).round()),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -236,7 +236,7 @@ class ProfileScreen extends StatelessWidget {
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: AppTheme.primaryColor,
+              color: AppTheme.primaryGreen,
             ),
           ),
           Text(
@@ -294,7 +294,7 @@ class ProfileScreen extends StatelessWidget {
     required VoidCallback onTap,
   }) {
     return ListTile(
-      leading: Icon(icon, color: AppTheme.primaryColor),
+      leading: Icon(icon, color: AppTheme.primaryGreen),
       title: Text(title),
       trailing: const Icon(Icons.chevron_right),
       onTap: onTap,

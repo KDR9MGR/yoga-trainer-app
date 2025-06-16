@@ -31,8 +31,8 @@ class ProgressTrackerScreen extends StatelessWidget {
             builder: (ctx) => _AddProgressDialog(),
           );
         },
-        child: const Icon(Icons.add),
         tooltip: 'Add Progress',
+        child: const Icon(Icons.add),
       ),
     );
   }
@@ -114,5 +114,5 @@ class _AddProgressDialogState extends State<_AddProgressDialog> {
 }
 
 extension DateHelpers on DateTime {
-  String toShortDateString() => '${this.day}/${this.month}/${this.year}';
+  String toShortDateString() => '$day/$month/$year';
 }

@@ -103,7 +103,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: AppTheme.primaryColor),
+            Icon(icon, color: AppTheme.primaryGreen),
             const Spacer(),
             Text(
               title,
@@ -153,15 +153,15 @@ class _ProgressScreenState extends State<ProgressScreen> {
               height: 200,
               child: LineChart(
                 LineChartData(
-                  gridData: FlGridData(show: false),
+                  gridData: const FlGridData(show: false),
                   titlesData: FlTitlesData(
-                    leftTitles: AxisTitles(
+                    leftTitles: const AxisTitles(
                       sideTitles: SideTitles(showTitles: false),
                     ),
-                    rightTitles: AxisTitles(
+                    rightTitles: const AxisTitles(
                       sideTitles: SideTitles(showTitles: false),
                     ),
-                    topTitles: AxisTitles(
+                    topTitles: const AxisTitles(
                       sideTitles: SideTitles(showTitles: false),
                     ),
                     bottomTitles: AxisTitles(
@@ -186,12 +186,12 @@ class _ProgressScreenState extends State<ProgressScreen> {
                         const FlSpot(6, 5),
                       ],
                       isCurved: true,
-                      color: AppTheme.primaryColor,
+                      color: AppTheme.primaryGreen,
                       barWidth: 3,
-                      dotData: FlDotData(show: false),
+                      dotData: const FlDotData(show: false),
                       belowBarData: BarAreaData(
                         show: true,
-                        color: AppTheme.primaryColor.withOpacity(0.1),
+                        color: AppTheme.primaryGreen.withAlpha((0.1 * 255).round()),
                       ),
                     ),
                   ],
@@ -225,12 +225,12 @@ class _ProgressScreenState extends State<ProgressScreen> {
               margin: const EdgeInsets.only(bottom: 8),
               child: ListTile(
                 leading: CircleAvatar(
-                  backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
-                  child: Icon(Icons.emoji_events, color: AppTheme.primaryColor),
+                  backgroundColor: AppTheme.primaryGreen.withAlpha((0.1 * 255).round()),
+                  child: const Icon(Icons.emoji_events, color: AppTheme.primaryGreen),
                 ),
-                title: Text('Completed 10 sessions'),
-                subtitle: Text('2 days ago'),
-                trailing: Icon(Icons.chevron_right),
+                title: const Text('Completed 10 sessions'),
+                subtitle: const Text('2 days ago'),
+                trailing: const Icon(Icons.chevron_right),
               ),
             );
           },

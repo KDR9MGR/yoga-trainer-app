@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/trainer_provider.dart';
-import '../models/trainer.dart';
 
 class ActivitySearchScreen extends StatefulWidget {
   const ActivitySearchScreen({Key? key}) : super(key: key);
