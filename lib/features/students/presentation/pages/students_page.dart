@@ -13,18 +13,20 @@ class StudentsPage extends ConsumerStatefulWidget {
 
 class _StudentsPageState extends ConsumerState<StudentsPage> {
   final _supabase = Supabase.instance.client;
+  List<Map<String, dynamic>> _allStudents = [];
   List<Map<String, dynamic>> _enrolledStudents = [];
   bool _isLoading = true;
   String _searchQuery = '';
   String _selectedFilter = 'all';
+  bool _showAllStudents = true;
 
   @override
   void initState() {
     super.initState();
-    _loadEnrolledStudents();
+    _loadStudents();
   }
 
-  Future<void> _loadEnrolledStudents() async {
+  Future<void> _loadStudents() async {
     try {
       setState(() => _isLoading = true);
       
@@ -40,8 +42,14 @@ class _StudentsPageState extends ConsumerState<StudentsPage> {
 
       final trainerId = trainerResponse['id'];
 
-      // Get all students enrolled in this trainer's classes
-      final response = await _supabase
+      // Load all students
+      final allStudentsResponse = await _supabase
+          .from('students')
+          .select('*')
+          .order('created_at', ascending: false);
+
+      // Load enrolled students in this trainer's classes
+      final enrolledResponse = await _supabase
           .from('enrollments')
           .select('''
             *,
@@ -68,28 +76,47 @@ class _StudentsPageState extends ConsumerState<StudentsPage> {
           .eq('classes.trainer_id', trainerId)
           .order('enrolled_at', ascending: false);
 
-      // Group by student to avoid duplicates
-      final Map<String, Map<String, dynamic>> uniqueStudents = {};
-      for (final enrollment in response) {
+      // Process enrolled students
+      final Map<String, Map<String, dynamic>> uniqueEnrolledStudents = {};
+      for (final enrollment in enrolledResponse) {
         final studentId = enrollment['students']['id'];
-        if (!uniqueStudents.containsKey(studentId)) {
-          uniqueStudents[studentId] = {
+        if (!uniqueEnrolledStudents.containsKey(studentId)) {
+          uniqueEnrolledStudents[studentId] = {
             ...enrollment['students'],
             'enrollments': [],
             'total_classes': 0,
             'total_spent': 0.0,
             'last_enrollment': enrollment['enrolled_at'],
+            'is_enrolled': true,
           };
         }
         
-        uniqueStudents[studentId]!['enrollments'].add(enrollment);
-        uniqueStudents[studentId]!['total_classes']++;
-        uniqueStudents[studentId]!['total_spent'] += 
+        uniqueEnrolledStudents[studentId]!['enrollments'].add(enrollment);
+        uniqueEnrolledStudents[studentId]!['total_classes']++;
+        uniqueEnrolledStudents[studentId]!['total_spent'] += 
             (enrollment['classes']['price'] ?? 0.0);
       }
 
+      // Process all students and mark enrollment status
+      final processedAllStudents = allStudentsResponse.map((student) {
+        final studentId = student['id'];
+        if (uniqueEnrolledStudents.containsKey(studentId)) {
+          return uniqueEnrolledStudents[studentId]!;
+        } else {
+          return {
+            ...student,
+            'enrollments': [],
+            'total_classes': 0,
+            'total_spent': 0.0,
+            'last_enrollment': null,
+            'is_enrolled': false,
+          };
+        }
+      }).toList();
+
       setState(() {
-        _enrolledStudents = uniqueStudents.values.toList();
+        _allStudents = processedAllStudents;
+        _enrolledStudents = uniqueEnrolledStudents.values.toList();
         _isLoading = false;
       });
     } catch (e) {
@@ -103,7 +130,7 @@ class _StudentsPageState extends ConsumerState<StudentsPage> {
   }
 
   List<Map<String, dynamic>> get _filteredStudents {
-    var filtered = _enrolledStudents;
+    var filtered = _showAllStudents ? _allStudents : _enrolledStudents;
 
     // Apply search filter
     if (_searchQuery.isNotEmpty) {
@@ -117,19 +144,17 @@ class _StudentsPageState extends ConsumerState<StudentsPage> {
 
     // Apply enrollment filter
     if (_selectedFilter != 'all') {
-      final now = DateTime.now();
-      filtered = filtered.where((student) {
-        final lastEnrollment = DateTime.parse(student['last_enrollment']);
-        switch (_selectedFilter) {
-          case 'recent':
-            return now.difference(lastEnrollment).inDays <= 30;
-          case 'active':
-            return student['enrollments'].any((enrollment) =>
-                enrollment['status'] == 'confirmed');
-          default:
-            return true;
-        }
-      }).toList();
+      if (_selectedFilter == 'enrolled') {
+        filtered = filtered.where((student) => student['is_enrolled'] == true).toList();
+      } else if (_selectedFilter == 'not_enrolled') {
+        filtered = filtered.where((student) => student['is_enrolled'] == false).toList();
+      } else if (_selectedFilter == 'recent') {
+        filtered = filtered.where((student) {
+          if (student['last_enrollment'] == null) return false;
+          final lastEnrollment = DateTime.parse(student['last_enrollment']);
+          return DateTime.now().difference(lastEnrollment).inDays <= 30;
+        }).toList();
+      }
     }
 
     return filtered;
@@ -139,18 +164,28 @@ class _StudentsPageState extends ConsumerState<StudentsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Students'),
-    //    backgroundColor: Theme.of(context).colorScheme.surface,
-        elevation: 0,
+        title: Text(_showAllStudents ? 'All Students' : 'Enrolled Students'),
+        actions: [
+          IconButton(
+            icon: Icon(_showAllStudents ? Icons.group : Icons.school),
+            onPressed: () {
+              setState(() {
+                _showAllStudents = !_showAllStudents;
+              });
+            },
+            tooltip: _showAllStudents ? 'Show Enrolled Only' : 'Show All Students',
+          ),
+        ],
       ),
       body: Column(
         children: [
           _buildSearchAndFilter(),
+          _buildStudentStats(),
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : RefreshIndicator(
-                    onRefresh: _loadEnrolledStudents,
+                    onRefresh: _loadStudents,
                     child: _filteredStudents.isEmpty
                         ? _buildEmptyState()
                         : _buildStudentsList(),
@@ -159,6 +194,74 @@ class _StudentsPageState extends ConsumerState<StudentsPage> {
         ],
       ),
       bottomNavigationBar: const AppBottomNavigation(),
+    );
+  }
+
+  Widget _buildStudentStats() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      color: Theme.of(context).colorScheme.surface,
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildStatCard(
+              'Total Students',
+              _allStudents.length.toString(),
+              Icons.people,
+              Colors.blue,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _buildStatCard(
+              'Enrolled',
+              _enrolledStudents.length.toString(),
+              Icons.school,
+              Colors.green,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _buildStatCard(
+              'Not Enrolled',
+              (_allStudents.length - _enrolledStudents.length).toString(),
+              Icons.person_add,
+              Colors.orange,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 24),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              color: color,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            title,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: color,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 
@@ -188,9 +291,11 @@ class _StudentsPageState extends ConsumerState<StudentsPage> {
               children: [
                 _buildFilterChip('All', 'all'),
                 const SizedBox(width: 8),
-                _buildFilterChip('Recent', 'recent'),
+                _buildFilterChip('Enrolled', 'enrolled'),
                 const SizedBox(width: 8),
-                _buildFilterChip('Active', 'active'),
+                _buildFilterChip('Not Enrolled', 'not_enrolled'),
+                const SizedBox(width: 8),
+                _buildFilterChip('Recent', 'recent'),
               ],
             ),
           ),
@@ -255,9 +360,10 @@ class _StudentsPageState extends ConsumerState<StudentsPage> {
   }
 
   Widget _buildStudentCard(Map<String, dynamic> student) {
-    final lastEnrollment = DateTime.parse(student['last_enrollment']);
+    final isEnrolled = student['is_enrolled'] ?? false;
     final totalClasses = student['total_classes'] ?? 0;
     final totalSpent = student['total_spent'] ?? 0.0;
+    final hasLastEnrollment = student['last_enrollment'] != null;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -268,30 +374,76 @@ class _StudentsPageState extends ConsumerState<StudentsPage> {
           children: [
             Row(
               children: [
-                CircleAvatar(
-                  radius: 25,
-                  backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
-                  backgroundImage: student['profile_image_url'] != null
-                      ? NetworkImage(student['profile_image_url'])
-                      : null,
-                  child: student['profile_image_url'] == null
-                      ? Icon(
-                          Icons.person,
-                          color: Theme.of(context).primaryColor,
-                          size: 30,
-                        )
-                      : null,
+                Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: 25,
+                      backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                      backgroundImage: student['profile_image_url'] != null
+                          ? NetworkImage(student['profile_image_url'])
+                          : null,
+                      child: student['profile_image_url'] == null
+                          ? Icon(
+                              Icons.person,
+                              color: Theme.of(context).primaryColor,
+                              size: 30,
+                            )
+                          : null,
+                    ),
+                    if (isEnrolled)
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: Container(
+                          width: 16,
+                          height: 16,
+                          decoration: BoxDecoration(
+                            color: Colors.green,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 2),
+                          ),
+                          child: const Icon(
+                            Icons.check,
+                            color: Colors.white,
+                            size: 10,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        student['full_name'] ?? 'Unknown Student',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              student['full_name'] ?? 'Unknown Student',
+                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: isEnrolled ? Colors.green.withValues(alpha: 0.1) : Colors.orange.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isEnrolled ? Colors.green.withValues(alpha: 0.3) : Colors.orange.withValues(alpha: 0.3),
+                              ),
+                            ),
+                            child: Text(
+                              isEnrolled ? 'Enrolled' : 'Not Enrolled',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: isEnrolled ? Colors.green : Colors.orange,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -324,6 +476,17 @@ class _StudentsPageState extends ConsumerState<StudentsPage> {
                         ],
                       ),
                     ),
+                    if (!isEnrolled)
+                      const PopupMenuItem(
+                        value: 'enroll',
+                        child: Row(
+                          children: [
+                            Icon(Icons.add_circle),
+                            SizedBox(width: 8),
+                            Text('Enroll in Class'),
+                          ],
+                        ),
+                      ),
                     const PopupMenuItem(
                       value: 'contact',
                       child: Row(
@@ -338,6 +501,8 @@ class _StudentsPageState extends ConsumerState<StudentsPage> {
                   onSelected: (value) {
                     if (value == 'view') {
                       _showStudentDetails(student);
+                    } else if (value == 'enroll') {
+                      _showEnrollmentDialog(student);
                     } else if (value == 'contact') {
                       _showContactOptions(student);
                     }
@@ -381,7 +546,9 @@ class _StudentsPageState extends ConsumerState<StudentsPage> {
                   Expanded(
                     child: _buildStatItem(
                       'Last Enrolled',
-                      DateFormat('MMM dd').format(lastEnrollment),
+                      hasLastEnrollment 
+                        ? DateFormat('MMM dd').format(DateTime.parse(student['last_enrollment']))
+                        : 'Never',
                       Icons.schedule,
                     ),
                   ),
@@ -570,6 +737,62 @@ class _StudentsPageState extends ConsumerState<StudentsPage> {
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEnrollmentDialog(Map<String, dynamic> student) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Enroll ${student['full_name']}'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Select a class to enroll this student:'),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info, color: Colors.blue, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Enrollment functionality will be available soon!',
+                      style: TextStyle(color: Colors.blue, fontSize: 13),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              // TODO: Implement enrollment logic
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Enrollment feature coming soon!'),
+                  backgroundColor: Colors.blue,
+                ),
+              );
+            },
+            child: const Text('Coming Soon'),
           ),
         ],
       ),
