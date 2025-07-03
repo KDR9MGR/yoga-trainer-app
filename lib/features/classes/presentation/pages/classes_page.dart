@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:trainer_manager_pro/core/widgets/widgets.dart';
 import 'package:trainer_manager_pro/shared/presentation/widgets/app_bottom_navigation.dart';
 
 class ClassesPage extends ConsumerStatefulWidget {
@@ -66,17 +67,22 @@ class _ClassesPageState extends ConsumerState<ClassesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Classes'),
-        elevation: 0,
-        backgroundColor: Theme.of(context).colorScheme.surface,
+      appBar: const ModularAppBar(
+        title: 'My Classes',
+        showBackButton: false,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const LoadingWidget(message: 'Loading classes...')
           : RefreshIndicator(
               onRefresh: _loadClasses,
               child: _classes.isEmpty
-                  ? _buildEmptyState()
+                  ? EmptyStateWidget(
+                      icon: Icons.fitness_center,
+                      title: 'No Classes Yet',
+                      subtitle: 'Create your first yoga class to get started',
+                      actionText: 'Create First Class',
+                      onActionPressed: _showCreateClassDialog,
+                    )
                   : _buildClassesList(),
             ),
       floatingActionButton: FloatingActionButton.extended(
@@ -88,40 +94,7 @@ class _ClassesPageState extends ConsumerState<ClassesPage> {
     );
   }
 
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.fitness_center,
-            size: 80,
-            color: Colors.grey[400],
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'No Classes Yet',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: Colors.grey[600],
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Create your first yoga class to get started',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.grey[500],
-            ),
-          ),
-          const SizedBox(height: 32),
-          ElevatedButton.icon(
-            onPressed: () => _showCreateClassDialog(),
-            icon: const Icon(Icons.add),
-            label: const Text('Create First Class'),
-          ),
-        ],
-      ),
-    );
-  }
+
 
   Widget _buildClassesList() {
     return ListView.builder(

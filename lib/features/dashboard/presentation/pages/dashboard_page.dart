@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:trainer_manager_pro/core/widgets/widgets.dart';
+import 'package:trainer_manager_pro/features/dashboard/presentation/widgets/welcome_section.dart';
+import 'package:trainer_manager_pro/features/dashboard/presentation/widgets/stats_grid.dart';
 import 'package:trainer_manager_pro/shared/presentation/widgets/app_bottom_navigation.dart';
  
 class DashboardPage extends ConsumerStatefulWidget {
@@ -142,13 +145,12 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Dashboard'),
-        //backgroundColor: Theme.of(context).colorScheme.surface,
-        elevation: 0,
+      appBar: const ModularAppBar(
+        title: 'Dashboard',
+        showBackButton: false,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const LoadingWidget(message: 'Loading dashboard...')
           : RefreshIndicator(
               onRefresh: _loadDashboardData,
               child: SingleChildScrollView(
@@ -156,9 +158,14 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildWelcomeSection(),
+                    WelcomeSection(trainerName: _trainerName),
                     const SizedBox(height: 24),
-                    _buildStatsCards(),
+                    const SectionHeader(title: 'Statistics'),
+                    const SizedBox(height: 16),
+                    StatsGrid(
+                      dashboardStats: _dashboardStats,
+                      isLoading: false,
+                    ),
                     const SizedBox(height: 24),
                     _buildUpcomingClasses(),
                     const SizedBox(height: 24),
@@ -171,167 +178,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     );
   }
 
-  Widget _buildWelcomeSection() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Theme.of(context).primaryColor,
-            Theme.of(context).primaryColor.withValues(alpha: 0.8),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Welcome back, ${_trainerName.split(' ').first}!',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Here\'s what\'s happening with your yoga classes today',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.9),
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  DateFormat('EEEE, MMMM dd, yyyy').format(DateTime.now()),
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.8),
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const Icon(
-            Icons.self_improvement,
-            size: 60,
-            color: Colors.white,
-          ),
-        ],
-      ),
-    );
-  }
 
-  Widget _buildStatsCards() {
-    final stats = [
-      {
-        'title': 'Total Classes',
-        'value': (_dashboardStats['total_classes'] ?? 0).toString(),
-        'icon': Icons.fitness_center,
-        'color': Colors.blue,
-      },
-      {
-        'title': 'Active Students',
-        'value': (_dashboardStats['active_students'] ?? 0).toString(),
-        'icon': Icons.people,
-        'color': Colors.green,
-      },
-      {
-        'title': 'This Month',
-        'value': '\$${(_dashboardStats['monthly_earnings'] ?? 0).toStringAsFixed(0)}',
-        'icon': Icons.attach_money,
-        'color': Colors.purple,
-      },
-      {
-        'title': 'Average Rating',
-        'value': (_dashboardStats['average_rating'] ?? 0.0).toStringAsFixed(1),
-        'icon': Icons.star,
-        'color': Colors.orange,
-      },
-    ];
 
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 1.5,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-      ),
-      itemCount: stats.length,
-      itemBuilder: (context, index) {
-        final stat = stats[index];
-        return Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withValues(alpha: 0.1),
-                spreadRadius: 1,
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Icon(
-                    stat['icon'] as IconData,
-                    color: stat['color'] as Color,
-                    size: 24,
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: (stat['color'] as Color).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Icon(
-                      Icons.trending_up,
-                      size: 12,
-                      color: stat['color'] as Color,
-                    ),
-                  ),
-                ],
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    stat['value'] as String,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: stat['color'] as Color,
-                    ),
-                  ),
-                  Text(
-                    stat['title'] as String,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
+
 
   Widget _buildUpcomingClasses() {
     return Column(
